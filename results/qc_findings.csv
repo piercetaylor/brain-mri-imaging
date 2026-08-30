@@ -1,0 +1,103 @@
+check,subject,detail,flagged
+scanner_combination,SIEMENS TrioTim,235 series across 41 patients,0
+modality,MR,235 series,0
+first_last_dimensions,UPENN-GBM-00019,256x192 then 256x192,0
+first_last_dimensions,UPENN-GBM-00020,896x896 then 256x192,1
+first_last_dimensions,UPENN-GBM-00032,256x192 then 256x192,0
+first_last_dimensions,UPENN-GBM-00048,896x896 then 128x128,1
+first_last_dimensions,UPENN-GBM-00049,256x192 then 896x896,1
+first_last_dimensions,UPENN-GBM-00050,128x128 then 256x192,1
+first_last_dimensions,UPENN-GBM-00062,128x128 then 896x896,1
+first_last_dimensions,UPENN-GBM-00075,256x192 then 256x192,0
+first_last_dimensions,UPENN-GBM-00085,128x128 then 896x896,1
+first_last_dimensions,UPENN-GBM-00101,256x192 then 256x192,0
+first_last_dimensions,UPENN-GBM-00142,256x192 then 256x208,1
+first_last_dimensions,UPENN-GBM-00195,256x192 then 256x192,0
+first_last_dimensions,UPENN-GBM-00206,256x192 then 256x192,0
+first_last_dimensions,UPENN-GBM-00224,128x128 then 256x192,1
+first_last_dimensions,UPENN-GBM-00226,320x256 then 256x192,1
+first_last_dimensions,UPENN-GBM-00231,128x128 then 256x192,1
+first_last_dimensions,UPENN-GBM-00239,896x896 then 256x208,1
+first_last_dimensions,UPENN-GBM-00245,128x128 then 256x192,1
+first_last_dimensions,UPENN-GBM-00251,256x192 then 320x256,1
+first_last_dimensions,UPENN-GBM-00264,256x192 then 896x896,1
+first_last_dimensions,UPENN-GBM-00272,256x192 then 896x896,1
+first_last_dimensions,UPENN-GBM-00334,256x192 then 256x208,1
+first_last_dimensions,UPENN-GBM-00338,896x896 then 256x208,1
+first_last_dimensions,UPENN-GBM-00350,256x192 then 128x128,1
+first_last_dimensions,UPENN-GBM-00365,256x192 then 128x128,1
+first_last_dimensions,UPENN-GBM-00374,256x192 then 256x208,1
+first_last_dimensions,UPENN-GBM-00386,256x192 then 256x208,1
+first_last_dimensions,UPENN-GBM-00397,256x208 then 896x896,1
+first_last_dimensions,UPENN-GBM-00399,256x192 then 128x128,1
+first_last_dimensions,UPENN-GBM-00409,256x192 then 128x128,1
+first_last_dimensions,UPENN-GBM-00418,128x128 then 256x192,1
+first_last_dimensions,UPENN-GBM-00421,896x896 then 256x192,1
+first_last_dimensions,UPENN-GBM-00435,256x208 then 256x192,1
+first_last_dimensions,UPENN-GBM-00438,256x208 then 896x896,1
+first_last_dimensions,UPENN-GBM-00459,256x192 then 256x192,0
+first_last_dimensions,UPENN-GBM-00468,256x192 then 256x192,0
+first_last_dimensions,UPENN-GBM-00502,256x192 then 256x208,1
+first_last_dimensions,UPENN-GBM-00518,256x192 then 256x192,0
+first_last_dimensions,UPENN-GBM-00534,256x192 then 256x192,0
+first_last_dimensions,UPENN-GBM-00587,256x192 then 256x208,1
+first_last_dimensions,UPENN-GBM-00626,256x192 then 256x208,1
+distinct_grids_per_patient,UPENN-GBM-00019,4 distinct row and column combinations,1
+distinct_grids_per_patient,UPENN-GBM-00020,4 distinct row and column combinations,1
+distinct_grids_per_patient,UPENN-GBM-00032,4 distinct row and column combinations,1
+distinct_grids_per_patient,UPENN-GBM-00048,4 distinct row and column combinations,1
+distinct_grids_per_patient,UPENN-GBM-00049,3 distinct row and column combinations,1
+distinct_grids_per_patient,UPENN-GBM-00050,4 distinct row and column combinations,1
+distinct_grids_per_patient,UPENN-GBM-00062,4 distinct row and column combinations,1
+distinct_grids_per_patient,UPENN-GBM-00075,4 distinct row and column combinations,1
+distinct_grids_per_patient,UPENN-GBM-00085,4 distinct row and column combinations,1
+distinct_grids_per_patient,UPENN-GBM-00101,2 distinct row and column combinations,1
+distinct_grids_per_patient,UPENN-GBM-00142,3 distinct row and column combinations,1
+distinct_grids_per_patient,UPENN-GBM-00195,4 distinct row and column combinations,1
+distinct_grids_per_patient,UPENN-GBM-00206,2 distinct row and column combinations,1
+distinct_grids_per_patient,UPENN-GBM-00224,4 distinct row and column combinations,1
+distinct_grids_per_patient,UPENN-GBM-00226,4 distinct row and column combinations,1
+distinct_grids_per_patient,UPENN-GBM-00231,4 distinct row and column combinations,1
+distinct_grids_per_patient,UPENN-GBM-00239,4 distinct row and column combinations,1
+distinct_grids_per_patient,UPENN-GBM-00245,4 distinct row and column combinations,1
+distinct_grids_per_patient,UPENN-GBM-00251,3 distinct row and column combinations,1
+distinct_grids_per_patient,UPENN-GBM-00264,4 distinct row and column combinations,1
+distinct_grids_per_patient,UPENN-GBM-00272,3 distinct row and column combinations,1
+distinct_grids_per_patient,UPENN-GBM-00334,4 distinct row and column combinations,1
+distinct_grids_per_patient,UPENN-GBM-00338,4 distinct row and column combinations,1
+distinct_grids_per_patient,UPENN-GBM-00350,4 distinct row and column combinations,1
+distinct_grids_per_patient,UPENN-GBM-00365,4 distinct row and column combinations,1
+distinct_grids_per_patient,UPENN-GBM-00374,4 distinct row and column combinations,1
+distinct_grids_per_patient,UPENN-GBM-00386,3 distinct row and column combinations,1
+distinct_grids_per_patient,UPENN-GBM-00397,4 distinct row and column combinations,1
+distinct_grids_per_patient,UPENN-GBM-00399,4 distinct row and column combinations,1
+distinct_grids_per_patient,UPENN-GBM-00409,4 distinct row and column combinations,1
+distinct_grids_per_patient,UPENN-GBM-00418,4 distinct row and column combinations,1
+distinct_grids_per_patient,UPENN-GBM-00421,4 distinct row and column combinations,1
+distinct_grids_per_patient,UPENN-GBM-00435,4 distinct row and column combinations,1
+distinct_grids_per_patient,UPENN-GBM-00438,3 distinct row and column combinations,1
+distinct_grids_per_patient,UPENN-GBM-00459,4 distinct row and column combinations,1
+distinct_grids_per_patient,UPENN-GBM-00468,4 distinct row and column combinations,1
+distinct_grids_per_patient,UPENN-GBM-00502,3 distinct row and column combinations,1
+distinct_grids_per_patient,UPENN-GBM-00518,4 distinct row and column combinations,1
+distinct_grids_per_patient,UPENN-GBM-00534,4 distinct row and column combinations,1
+distinct_grids_per_patient,UPENN-GBM-00587,3 distinct row and column combinations,1
+distinct_grids_per_patient,UPENN-GBM-00626,4 distinct row and column combinations,1
+photometric_interpretation,MONOCHROME2,235 series,0
+bits_allocated,16,235 series,0
+non_structural_series,ep2d_DTI_30dir,25 series,1
+non_structural_series,ep2d_DTI_30dir_T,7 series,1
+non_structural_series,ep2d_DTI_30dir_TERA,2 series,1
+non_structural_series,ep2d_DTI_30dir_TERA ONLY FIRST DTI,2 series,1
+non_structural_series,ep2d_diff_MDDW_IPAT,3 series,1
+non_structural_series,ep2d_perf 12 CC BOLUS,10 series,1
+non_structural_series,ep2d_perf 3cc pre 12bolus,1 series,1
+non_structural_series,ep2d_perf BOLUS,12 series,1
+non_structural_series,ep2d_perf BOLUS_T,5 series,1
+non_structural_series,ep2d_perf BOLUS_TERA,4 series,1
+within_series_constant,bits_allocated,0 series carry more than one value,0
+within_series_constant,cols,0 series carry more than one value,0
+within_series_constant,manufacturer,0 series carry more than one value,0
+within_series_constant,model_name,0 series carry more than one value,0
+within_series_constant,photometric_interpretation,0 series carry more than one value,0
+within_series_constant,rows,0 series carry more than one value,0

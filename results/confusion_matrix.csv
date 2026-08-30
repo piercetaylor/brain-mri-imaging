@@ -1,0 +1,13 @@
+split,actual,predicted,count
+train,non-tumor,non-tumor,20184
+train,non-tumor,tumor,12
+train,tumor,non-tumor,239
+train,tumor,tumor,9859
+validation,non-tumor,non-tumor,5153
+validation,non-tumor,tumor,41
+validation,tumor,non-tumor,619
+validation,tumor,tumor,1978
+test,non-tumor,non-tumor,6947
+test,non-tumor,tumor,21
+test,tumor,non-tumor,1172
+test,tumor,tumor,2312

@@ -1,0 +1,7 @@
+split,class,precision,recall,f1,support
+train,non-tumor,0.9883,0.9994,0.9938,20196
+train,tumor,0.9988,0.9763,0.9874,10098
+validation,non-tumor,0.8928,0.9921,0.9398,5194
+validation,tumor,0.9797,0.7616,0.857,2597
+test,non-tumor,0.8556,0.997,0.9209,6968
+test,tumor,0.991,0.6636,0.7949,3484

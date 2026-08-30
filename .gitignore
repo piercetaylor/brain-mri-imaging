@@ -1,0 +1,32 @@
+# Local development aids, not deliverables.
+.checks/
+
+# Images are redistributed by the archives that publish them, not by this
+# repository. data/download_data.py and data/checksums.txt are the
+# reproducible substitute.
+data/raw/
+data/interim/
+data/metrics_before_rerun.csv
+data/manifest_before_rerun.csv
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+
+# Model weights and derived arrays are rebuilt by the pipeline.
+*.pt
+*.npz
+*.h5
+*.keras
+
+# Large or transient intermediates
+*.zip
+*.log
+
+# Planning and audit records kept locally, not part of the deliverable.
+docs/project-plan.md
+docs/todo.md
+docs/execution-log.md
+docs/figure-plan.md
