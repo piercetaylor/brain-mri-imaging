@@ -251,9 +251,9 @@ ORIENTATION_TOLERANCE_MARGIN = 10.0
 #
 # Measured over the 49 image and segmentation pairs, the largest translation
 # residual is 1.736e-03 voxels, on the row axis of UPENN-GBM-00452, the GE
-# MEDICAL SYSTEMS DISCOVERY MR750w patient. That displaces the mask by
-# 8.138e-04 mm at the 0.468800 mm in-plane spacing of the series. The next
-# largest is 5.195e-05 voxels on UPENN-GBM-00625, a SIEMENS Verio, and the
+# MEDICAL SYSTEMS DISCOVERY MR750w patient. That would move the mask 8.138e-04
+# mm along that axis, at the 0.468800 mm in-plane spacing of the series. The
+# next largest is 5.195e-05 voxels on UPENN-GBM-00625, a SIEMENS Verio, and the
 # cohort median is 5.744e-06 voxels. Five pairs exceed the 1e-5 default: those
 # two, UPENN-GBM-00487 and UPENN-GBM-00494 on SIEMENS Avanto scanners at
 # 3.506e-05 and 1.317e-05 voxels, and UPENN-GBM-00609 on a SIEMENS SymphonyTim

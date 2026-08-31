@@ -13,11 +13,11 @@ That placement only succeeds when the two grids agree, and the two series write
 their geometry as decimal strings that round differently. The residual the
 translation leaves against a whole number of voxels is measured for every pair
 and recorded in ``results/patch_summary.csv``. The largest is 1.736e-03 voxels,
-which displaces the mask by 8.138e-04 mm; ``config`` carries the tolerance and
-the measurement it was set from. The five pairs whose residual exceeds the
-1e-05 the library defaults to are added to ``results/qc_findings.csv``, beside
-the orientation findings stage 3 records, together with a count for each of the
-six scanner models in the cohort.
+and that pair's mask would move 8.138e-04 mm along one axis; ``config`` carries
+the tolerance and the measurement it was set from. The five pairs whose
+residual exceeds the 1e-05 the library defaults to are added to
+``results/qc_findings.csv``, beside the orientation findings stage 3 records,
+together with a count for each of the six scanner models in the cohort.
 
 A patch is positive when at least ``POSITIVE_TUMOR_FRACTION`` of its pixels lie
 inside the union of the necrosis, edema and enhancing-lesion segments. A patch
@@ -115,9 +115,13 @@ def geometry_residuals(volume, mask_volume):
     two keep a bound 0.81 degrees wide; ``config`` carries both numbers and
     what was measured to arrive at them.
 
-    The returned displacement is the translation residual multiplied by the
-    spacing of the axis carrying it, which is the distance the segmentation
-    would move if the residual were real.
+    The residual and the displacement are each maximized over the three axes
+    independently, so the two need not fall on the same axis. On at least two
+    of the 49 pairs they do not: the displacement divided by the residual is
+    4.759 on UPENN-GBM-00609 and 3.293 on UPENN-GBM-00494, and neither quotient
+    is a spacing this cohort carries. The displacement is therefore the
+    furthest the segmentation would move along any one axis, and that is what
+    the quantum of the coordinate strings bounds.
     """
     permutation = []
     direction_defect = 0.0
@@ -134,6 +138,21 @@ def geometry_residuals(volume, mask_volume):
         permutation.append(axis)
         direction_defect = max(direction_defect, defect)
         scale_residual = max(scale_residual, abs(scale - round(scale)))
+
+    # Two image directions can be closest to one mask axis, which leaves
+    # permutation without one of the three. Orthonormality bounds the dot
+    # product of two such directions onto one axis at 1/sqrt(2), so
+    # direction_defect is then at least 0.293 against a tolerance of 1e-04 and
+    # the caller raises on the defect. The residual is returned as infinite so
+    # that the caller reports that cause, and not the ValueError
+    # permute_spatial_axes raises on a permutation missing an axis.
+    if sorted(permutation) != [0, 1, 2]:
+        return {
+            "geometry_direction_defect": direction_defect,
+            "geometry_scale_residual": scale_residual,
+            "geometry_translation_residual": float("inf"),
+            "geometry_translation_displacement_mm": float("inf"),
+        }
 
     placed = (mask_volume if permutation == [0, 1, 2]
               else mask_volume.permute_spatial_axes(permutation))
@@ -344,9 +363,11 @@ def geometry_findings(summaries, models):
     tolerance is passed at all. One row per scanner model reports how many of
     its pairs exceed that default, so that the residual is attributed to the
     equipment it came from and not to the cohort as a whole. One cohort row
-    carries the largest residual and what it displaces. The per-pair and cohort
-    rows are flagged, and a scanner row is flagged when any of its pairs
-    exceeds the default.
+    carries the largest residual and the furthest any mask would move along one
+    axis. A per-pair row is written only for a pair above the default, and every
+    such row is flagged.
+    The scanner and cohort rows are flagged when at least one pair they cover
+    exceeds it, which is how stage 3 flags its own cohort row.
 
     ``models`` maps a patient identifier to the manufacturer and model of its
     image series, which the manifest records.
@@ -363,9 +384,10 @@ def geometry_findings(summaries, models):
             "subject": summary["patient_id"],
             "detail": "on {} the translation between the image origin and the "
                       "segmentation origin leaves {:.3e} voxels against a whole "
-                      "number of voxels, which displaces the mask {:.3e} mm, "
-                      "above the {:.3e} library default and against a tolerance "
-                      "of {:.3e}".format(
+                      "number and would move the mask {:.3e} mm, each the "
+                      "largest of the three axes and not necessarily the same "
+                      "axis, above the {:.3e} library default and against a "
+                      "tolerance of {:.3e}".format(
                           models[summary["patient_id"]],
                           summary["geometry_translation_residual"],
                           summary["geometry_translation_displacement_mm"],
@@ -401,35 +423,60 @@ def geometry_findings(summaries, models):
         "subject": "cohort",
         "detail": "{} of {} image and segmentation pairs leave a translation "
                   "residual above the {:.3e} library default, largest {:.3e} "
-                  "voxels on {}, which displaces the mask {:.3e} mm, against a "
-                  "tolerance of {:.3e}".format(
+                  "voxels on {}, whose mask would move {:.3e} mm, each figure "
+                  "the largest of the three axes, against a tolerance of "
+                  "{:.3e}".format(
                       exceeded, len(summaries),
                       config.GEOMETRY_DEFAULT_TOLERANCE,
                       worst["geometry_translation_residual"],
                       worst["patient_id"],
                       worst["geometry_translation_displacement_mm"],
                       config.GEOMETRY_TRANSLATION_TOLERANCE),
-        "flagged": 1,
+        "flagged": int(exceeded > 0),
     })
     return findings
 
 
-def append_geometry_findings(findings):
-    """Add the geometry findings to the table stage 3 wrote, and return it.
+def qc_findings_columns():
+    """The columns of the table stage 3 wrote, read before stage 4 does its work.
 
-    Stage 3 writes ``results/qc_findings.csv`` from the image headers and stage
-    4 runs after it, so the table is read back and rewritten with these rows
-    appended. Rows carrying one of :data:`GEOMETRY_CHECKS` are dropped first,
-    which makes a second stage 4 over the same cohort leave the table it found.
+    Stage 4 adds its rows at the end of an 80.8 second run that has already
+    written ``patches.npz`` and ``results/patch_summary.csv``, so all three
+    conditions that would stop it there are tested first. An interrupted stage
+    3 leaves a table that exists and carries no header, so the header is tested
+    and not the file alone.
     """
     if not QC_TABLE.exists():
         raise SystemExit(
             "results/qc_findings.csv is absent. Stage 03 writes it and stage 04 "
             "adds to it, so stage 03 has to run first.")
     with open(QC_TABLE, newline="", encoding="utf-8") as handle:
-        reader = csv.DictReader(handle)
-        columns = list(reader.fieldnames)
-        kept = [row for row in reader if row["check"] not in GEOMETRY_CHECKS]
+        columns = csv.DictReader(handle).fieldnames
+    if not columns:
+        raise SystemExit(
+            "results/qc_findings.csv carries no header. Stage 03 was "
+            "interrupted before it wrote one. Re-run stage 03.")
+    if set(columns) != {"check", "subject", "detail", "flagged"}:
+        raise SystemExit(
+            "results/qc_findings.csv carries the columns {} where stage 04 "
+            "writes check, subject, detail and flagged. Re-run stage 03.".format(
+                ", ".join(columns)))
+    return list(columns)
+
+
+def append_geometry_findings(findings, columns):
+    """Add the geometry findings to the table stage 3 wrote, and return it.
+
+    Stage 3 writes ``results/qc_findings.csv`` from the image headers and stage
+    4 runs after it, so the table is read back and rewritten with these rows
+    appended. Rows carrying one of :data:`GEOMETRY_CHECKS` are dropped first,
+    which makes a second stage 4 over the same cohort leave the table it found.
+    ``columns`` comes from :func:`qc_findings_columns`, which stage 4 calls
+    before it reads the first image.
+    """
+    with open(QC_TABLE, newline="", encoding="utf-8") as handle:
+        kept = [row for row in csv.DictReader(handle)
+                if row["check"] not in GEOMETRY_CHECKS]
     rows = kept + [{column: finding[column] for column in columns}
                    for finding in findings]
     write_table(rows, QC_TABLE, columns)
@@ -438,6 +485,7 @@ def append_geometry_findings(findings):
 
 def build():
     banner("stage 04 patches")
+    qc_columns = qc_findings_columns()
     pairs = labeled_pairs()
     rng = np.random.default_rng(config.SEED)
 
@@ -514,8 +562,10 @@ def build():
     # and five of the 49 pairs exceed the 1e-5 that tolerance defaults to. The
     # residuals are recorded per pair in results/patch_summary.csv and
     # summarized here, so the tolerance config carries can be read against what
-    # the cohort holds. The displacement is the distance the mask would move if
-    # the residual were a position the two series disagree on.
+    # the cohort holds. The residual and the displacement are each the largest
+    # over the three axes and need not fall on the same one, so the
+    # displacement is the furthest the mask would move along any one axis were
+    # the residual a position the two series disagree on.
     translation = [s["geometry_translation_residual"] for s in summaries]
     displacement = [s["geometry_translation_displacement_mm"] for s in summaries]
     metrics.update({
@@ -544,7 +594,8 @@ def build():
     # describe the whole file and not the part of it one stage wrote.
     models = {patient_id: image_row["manufacturer"] + " " + image_row["model_name"]
               for patient_id, image_row, _ in pairs}
-    findings = append_geometry_findings(geometry_findings(summaries, models))
+    findings = append_geometry_findings(
+        geometry_findings(summaries, models), qc_columns)
     metrics.update({
         "qc_findings_total": len(findings),
         "qc_findings_flagged": sum(int(row["flagged"]) for row in findings),
@@ -579,9 +630,9 @@ def build():
           "{} of {} patients carry unreviewed voxels".format(
               100 * reviewed_total / max(tumor_total, 1),
               sum(1 for v in shares if v < 1.0), len(shares)))
-    print("largest translation residual {:.3e} voxels on {}, which displaces the "
-          "mask {:.3e} mm, against a tolerance of {:.3e}; {} of {} pairs exceed "
-          "{:.3e}".format(
+    print("largest translation residual {:.3e} voxels on {}, and the furthest "
+          "any mask would move along one axis {:.3e} mm, against a tolerance "
+          "of {:.3e}; {} of {} pairs exceed {:.3e}".format(
               max(translation),
               metrics.get("geometry_worst_pair"), max(displacement),
               config.GEOMETRY_TRANSLATION_TOLERANCE,

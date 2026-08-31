@@ -126,8 +126,9 @@ Placing a segmentation on its image grid requires the translation between the
 two origins to fall on a whole number of voxels. Of the 49 image and
 segmentation pairs, 5 leave a residual above the 1e-05 library default, and the
 cohort median is 5.744e-06 voxels. The largest is 1.7359e-03 voxels on
-`UPENN-GBM-00452`, which displaces the mask 8.1379e-04 mm. Every one of the five
-sits on a scanner model the previous single-scanner cohort did not contain.
+`UPENN-GBM-00452`, whose mask would move 8.1379e-04 mm along one axis, each
+figure the largest of the three axes. Every one of the five sits on a scanner
+model the previous single-scanner cohort did not contain.
 
 Each residual was traced to the decimal string that produces it. One
 segmentation writes its pixel spacing as `4.882812e-01` against the image's

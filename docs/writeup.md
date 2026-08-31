@@ -129,10 +129,11 @@ the volume assembly and the recorded finding protects the claim.
 requires the translation between the two origins to fall on a whole number of
 voxels. Of the 49 image and segmentation pairs, 5 leave a residual above the
 1e-05 library default, and the cohort median is 5.744e-06 voxels. The largest
-residual is 1.7359e-03 voxels on `UPENN-GBM-00452`, which displaces the mask
-8.1379e-04 mm. All five sit on scanner models the previous single-scanner cohort
-did not contain. The 44 pairs on the two models that produced none, holding 42
-and 2 patients, sit below the default.
+residual is 1.7359e-03 voxels on `UPENN-GBM-00452`, whose mask would move
+8.1379e-04 mm along one axis, each figure the largest of the three axes. All
+five sit on scanner models the previous single-scanner cohort did not contain.
+The 44 pairs on the two models that produced none, holding 42 and 2 patients,
+sit below the default.
 
 Each residual was traced to the decimal string that produces it, so the
 classification is a measurement and not a judgment. One segmentation writes its
