@@ -1,0 +1,10 @@
+series_desc,manufacturer,model_name,patients,series
+AX T1 POST: Processed_CaPTk,SIEMENS,Avanto,2,2
+POST AX T1  FS FSE: Processed_CaPTk,GE MEDICAL SYSTEMS,DISCOVERY MR750w,1,1
+AX T1 POST STEALTH: Processed_CaPTk,SIEMENS,Espree,2,2
+AXIAL T1 FLOW COMP POST : Processed_CaPTk,SIEMENS,SymphonyTim,1,1
+AX T1 3D POST STEALTH : Processed_CaPTk,SIEMENS,TrioTim,1,1
+t1 axial stealth-post : Processed_CaPTk,SIEMENS,TrioTim,30,30
+t1 axial stealth-post_T : Processed_CaPTk,SIEMENS,TrioTim,7,7
+t1 axial stealth-post_TERA: Processed_CaPTk,SIEMENS,TrioTim,4,4
+AX T1 3D POST STEALTH : Processed_CaPTk,SIEMENS,Verio,1,1

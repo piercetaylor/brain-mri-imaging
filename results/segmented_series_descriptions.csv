@@ -1,0 +1,44 @@
+series_desc,manufacturer,model_name,patients,series,admitted
+AX  FLAIR : Processed_CaPTk,SIEMENS,Avanto,1,1,0
+AX T1 MPRAGE ISOTROPIC: Processed_CaPTk,SIEMENS,Avanto,2,2,0
+AX T1 POST: Processed_CaPTk,SIEMENS,Avanto,2,2,1
+AX T1 PRE : Processed_CaPTk,SIEMENS,Avanto,4,4,0
+AX T2 : Processed_CaPTk,SIEMENS,Avanto,4,4,0
+AXIAL FLAIR : Processed_CaPTk,SIEMENS,Avanto,3,3,0
+AX FLAIR FS : Processed_CaPTk,GE MEDICAL SYSTEMS,DISCOVERY MR750w,1,1,0
+AX T1 FSE : Processed_CaPTk,GE MEDICAL SYSTEMS,DISCOVERY MR750w,1,1,0
+Ax T2 POST: Processed_CaPTk,GE MEDICAL SYSTEMS,DISCOVERY MR750w,1,1,0
+POST AX T1  FS FSE: Processed_CaPTk,GE MEDICAL SYSTEMS,DISCOVERY MR750w,1,1,1
+AX FLAIR: Processed_CaPTk,SIEMENS,Espree,3,3,0
+AX T1 MPRAGE ISOTROPIC: Processed_CaPTk,SIEMENS,Espree,1,1,0
+AX T1 POST STEALTH: Processed_CaPTk,SIEMENS,Espree,2,2,1
+AX T1 PRE : Processed_CaPTk,SIEMENS,Espree,3,3,0
+AX T2 : Processed_CaPTk,SIEMENS,Espree,4,4,0
+AXIAL T1 FLOW COMP POST : Processed_CaPTk,SIEMENS,SymphonyTim,1,1,1
+AXIAL T2 FLAIR: Processed_CaPTk,SIEMENS,SymphonyTim,1,1,0
+T1 AXIAL SE : Processed_CaPTk,SIEMENS,SymphonyTim,1,1,0
+T2 AXIAL: Processed_CaPTk,SIEMENS,SymphonyTim,1,1,0
+AX T1 3D POST STEALTH : Processed_CaPTk,SIEMENS,TrioTim,1,1,1
+AX T1 3D PRE: Processed_CaPTk,SIEMENS,TrioTim,1,1,0
+AX T2 FLAIR : Processed_CaPTk,SIEMENS,TrioTim,1,1,0
+AXIAL T1 BRAIN 3D : Processed_CaPTk,SIEMENS,TrioTim,1,1,0
+AXIAL T1 MPRAGE BRAIN : Processed_CaPTk,SIEMENS,TrioTim,3,5,0
+AXIAL T2 BRAIN: Processed_CaPTk,SIEMENS,TrioTim,3,3,0
+AXIAL T2 FLAIR BRAIN: Processed_CaPTk,SIEMENS,TrioTim,3,3,0
+Axial T2 tse: Processed_CaPTk,SIEMENS,TrioTim,33,33,0
+T2 SAG SPACE: Processed_CaPTk,SIEMENS,TrioTim,8,8,0
+t1 axial stealth-post : Processed_CaPTk,SIEMENS,TrioTim,30,30,1
+t1 axial stealth-post_T : Processed_CaPTk,SIEMENS,TrioTim,7,7,1
+t1 axial stealth-post_TERA: Processed_CaPTk,SIEMENS,TrioTim,4,4,1
+t1 axial: Processed_CaPTk,SIEMENS,TrioTim,30,30,0
+t1 axial_ 3D_T: Processed_CaPTk,SIEMENS,TrioTim,1,1,0
+t1 axial_ 3D_TERA : Processed_CaPTk,SIEMENS,TrioTim,2,2,0
+t1 axial_T: Processed_CaPTk,SIEMENS,TrioTim,6,6,0
+t1 axial_TERA : Processed_CaPTk,SIEMENS,TrioTim,2,2,0
+t2_Flair_axial: Processed_CaPTk,SIEMENS,TrioTim,30,30,0
+t2_Flair_axial_T: Processed_CaPTk,SIEMENS,TrioTim,7,7,0
+t2_Flair_axial_TERA : Processed_CaPTk,SIEMENS,TrioTim,4,4,0
+AX T1 3D POST STEALTH : Processed_CaPTk,SIEMENS,Verio,1,1,1
+AX T1 3D PRE: Processed_CaPTk,SIEMENS,Verio,1,1,0
+T2 AXIAL FLAIR: Processed_CaPTk,SIEMENS,Verio,1,1,0
+T2 AXIAL: Processed_CaPTk,SIEMENS,Verio,1,1,0

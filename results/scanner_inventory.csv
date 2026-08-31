@@ -1,2 +1,7 @@
 manufacturer,model_name,series,patients
-SIEMENS,TrioTim,235,41
+SIEMENS,TrioTim,239,42
+SIEMENS,Espree,12,3
+SIEMENS,Avanto,8,2
+SIEMENS,Verio,6,1
+GE MEDICAL SYSTEMS,DISCOVERY MR750w,4,1
+SIEMENS,SymphonyTim,4,1

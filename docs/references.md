@@ -68,6 +68,14 @@ Multimodal Brain Tumor Image Segmentation Benchmark (BRATS). *IEEE Transactions
 on Medical Imaging* 34(10):1993-2024.
 [doi:10.1109/TMI.2014.2377694](https://doi.org/10.1109/TMI.2014.2377694).
 
+Head tissue is separated from air by the threshold of Otsu, N. (1979). A
+threshold selection method from gray-level histograms. *IEEE Transactions on
+Systems, Man, and Cybernetics* 9(1):62-66.
+[doi:10.1109/TSMC.1979.4310076](https://doi.org/10.1109/TSMC.1979.4310076). The
+method takes its threshold from the image histogram and needs no tuned constant,
+so the same rule applies to every volume in the cohort regardless of the scanner
+that produced it.
+
 The decision not to make methylation of the MGMT promoter the classification
 target rests on Baid, U. et al. (2021). The RSNA-ASNR-MICCAI BraTS 2021
 benchmark on brain tumor segmentation and radiogenomic classification.

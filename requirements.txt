@@ -3,7 +3,9 @@
 # PyTorch is installed from the CPU wheel index:
 #   python -m pip install torch==2.13.0 --index-url https://download.pytorch.org/whl/cpu
 highdicom==0.28.1
+ipykernel==7.3.0
 matplotlib==3.11.1
+nbclient==0.11.0
 nbformat==5.11.1
 numpy==2.5.2
 pandas==3.0.5

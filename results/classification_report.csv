@@ -1,7 +1,7 @@
-split,class,precision,recall,f1,support
-train,non-tumor,0.9883,0.9994,0.9938,20196
-train,tumor,0.9988,0.9763,0.9874,10098
-validation,non-tumor,0.8928,0.9921,0.9398,5194
-validation,tumor,0.9797,0.7616,0.857,2597
-test,non-tumor,0.8556,0.997,0.9209,6968
-test,tumor,0.991,0.6636,0.7949,3484
+split,class,took_part_in_epoch_selection,precision,recall,f1,support
+train,non-tumor,no,0.9862,0.9552,0.9705,25380
+train,tumor,no,0.9158,0.9732,0.9436,12690
+validation,non-tumor,yes: the retained epoch maximizes this split's ROC-AUC,0.9256,0.9172,0.9214,4204
+validation,tumor,yes: the retained epoch maximizes this split's ROC-AUC,0.8374,0.8525,0.8449,2102
+test,non-tumor,no,0.9464,0.9836,0.9646,9608
+test,tumor,no,0.9643,0.8886,0.9249,4804

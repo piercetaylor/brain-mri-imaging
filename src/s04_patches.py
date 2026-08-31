@@ -1,10 +1,23 @@
 """Stage 4: turn each labeled volume into 32 by 32 image patches.
 
-For every patient the axial T1 post-contrast volume is paired with its
-radiologist-corrected segmentation. The segmentation is stored on its own grid,
+For every patient the post-contrast T1 volume is paired with the segmentation
+selected in stage 1, which carries at least one segment a person reviewed but
+need not have been reviewed throughout. The share of the positive label that
+rests on a reviewed segment is measured here and recorded per patient in
+``results/patch_summary.csv``. The segmentation is stored on its own grid,
 whose in-plane orientation is the negative of the image orientation, so the
 mask is resampled onto the image geometry through the patient coordinate system
 before any pixel is read. The overlap is checked afterwards and recorded.
+
+That placement only succeeds when the two grids agree, and the two series write
+their geometry as decimal strings that round differently. The residual the
+translation leaves against a whole number of voxels is measured for every pair
+and recorded in ``results/patch_summary.csv``. The largest is 1.736e-03 voxels,
+which displaces the mask by 8.138e-04 mm; ``config`` carries the tolerance and
+the measurement it was set from. The five pairs whose residual exceeds the
+1e-05 the library defaults to are added to ``results/qc_findings.csv``, beside
+the orientation findings stage 3 records, together with a count for each of the
+six scanner models in the cohort.
 
 A patch is positive when at least ``POSITIVE_TUMOR_FRACTION`` of its pixels lie
 inside the union of the necrosis, edema and enhancing-lesion segments. A patch
@@ -29,6 +42,19 @@ from .s99_utils import Metrics, banner, otsu_threshold, write_table
 INTERIM = config.DATA / "interim"
 PATCH_FILE = INTERIM / "patches.npz"
 PATCH_TABLE = config.RESULTS / "patch_summary.csv"
+QC_TABLE = config.RESULTS / "qc_findings.csv"
+
+# The check names stage 4 contributes to results/qc_findings.csv. Stage 3
+# writes that table and cannot carry these findings: the residual is a property
+# of an image and segmentation pair, and stage 3 reads neither the segmentation
+# series nor ImagePositionPatient, which is not among the tags stage 2
+# extracts. The rows are keyed by these names so that a repeated stage 4
+# replaces its own findings and leaves the stage 3 rows untouched.
+GEOMETRY_CHECKS = (
+    "segmentation_geometry_residual",
+    "segmentation_geometry_by_scanner",
+    "segmentation_geometry_consistency",
+)
 
 
 def read_manifest():
@@ -59,32 +85,153 @@ def labeled_pairs():
 
 
 def load_volume(patient_id, image_row):
+    """The image series of one patient, assembled into a volume.
+
+    ``orientation_tol`` is supplied because five of the 35 slices of
+    UPENN-GBM-00452, the GE MEDICAL SYSTEMS DISCOVERY MR750w patient, carry
+    ImageOrientationPatient values that describe the same plane to the six
+    significant figures the DICOM decimal string holds; stage 3 measures the
+    disagreement at 7.77e-15 and ``config.ORIENTATION_TOLERANCE`` carries the
+    rest of that measurement. Left unset, the argument makes the comparison an
+    equality test on the stored text, which that series fails. The check itself
+    is kept: a series whose slices point in genuinely different directions
+    exceeds the tolerance and raises, as it should.
+    """
     directory = series_directory(patient_id, "image", image_row["series_uid"])
     datasets = [pydicom.dcmread(path) for path in sorted(directory.glob("*.dcm"))]
-    return hd.get_volume_from_series(datasets)
+    return hd.get_volume_from_series(
+        datasets, orientation_tol=config.ORIENTATION_TOLERANCE)
+
+
+def geometry_residuals(volume, mask_volume):
+    """The three quantities ``Volume.match_geometry`` holds to its tolerance.
+
+    highdicom pairs each direction vector of the image with the direction
+    vector of the segmentation it is closest to, compares the two by their dot
+    product, compares the two spacings by the ratio between them, and compares
+    the two origins by the remainder the translation leaves in voxels. One
+    tolerance covers all three. The three are measured separately here so that
+    the translation can be given the tolerance the cohort needs while the other
+    two keep a bound 0.81 degrees wide; ``config`` carries both numbers and
+    what was measured to arrive at them.
+
+    The returned displacement is the translation residual multiplied by the
+    spacing of the axis carrying it, which is the distance the segmentation
+    would move if the residual were real.
+    """
+    permutation = []
+    direction_defect = 0.0
+    scale_residual = 0.0
+    for target, target_spacing in zip(volume.unit_vectors(), volume.spacing):
+        best = None
+        for axis, (vector, spacing) in enumerate(
+                zip(mask_volume.unit_vectors(), mask_volume.spacing)):
+            dot = float(target @ vector)
+            defect = min(abs(dot - 1.0), abs(dot + 1.0))
+            if best is None or defect < best[0]:
+                best = (defect, axis, target_spacing / spacing)
+        defect, axis, scale = best
+        permutation.append(axis)
+        direction_defect = max(direction_defect, defect)
+        scale_residual = max(scale_residual, abs(scale - round(scale)))
+
+    placed = (mask_volume if permutation == [0, 1, 2]
+              else mask_volume.permute_spatial_axes(permutation))
+    origin_offset = np.array(volume.position) - np.array(placed.position)
+    translation = 0.0
+    displacement = 0.0
+    for vector, spacing in zip(placed.unit_vectors(), placed.spacing):
+        start = float(vector @ origin_offset) / spacing
+        residual = abs(start - round(start))
+        translation = max(translation, residual)
+        displacement = max(displacement, residual * spacing)
+    return {
+        "geometry_direction_defect": direction_defect,
+        "geometry_scale_residual": scale_residual,
+        "geometry_translation_residual": translation,
+        "geometry_translation_displacement_mm": displacement,
+    }
 
 
 def load_mask(patient_id, seg_row, volume):
-    """Whole-tumor mask resampled onto the image grid."""
+    """Whole-tumor mask resampled onto the image grid, with its provenance.
+
+    The cohort filter requires that a segmentation series carry at least one
+    SEMIAUTOMATIC segment, which is the algorithm type DICOM records for a
+    contour a person reviewed. It does not require that of every segment, and
+    the necrosis, edema and enhancing-lesion segments are unioned here whatever
+    their individual type. The algorithm type of each tumor segment is
+    therefore read separately and its voxels attributed to it, so that the
+    share of the positive label nobody reviewed is a measured number.
+
+    A voxel can lie inside more than one segment, so the shares are computed on
+    the union and not by adding per-segment counts: a voxel counts as reviewed
+    when at least one SEMIAUTOMATIC segment covers it, and as unreviewed when
+    only segments of another type do. The two shares partition the mask and sum
+    to one.
+    """
     directory = series_directory(patient_id, "segmentation", seg_row["series_uid"])
     segmentation = hd.seg.segread(sorted(directory.glob("*.dcm"))[0])
-    numbers, labels = [], []
+    numbers, labels, algorithms = [], [], []
     for number in range(1, segmentation.number_of_segments + 1):
         description = segmentation.get_segment_description(number)
         label = str(description.SegmentedPropertyTypeCodeSequence[0].CodeMeaning)
         if label in config.TUMOR_SEGMENT_LABELS:
             numbers.append(number)
             labels.append(label)
+            algorithms.append(
+                str(getattr(description, "SegmentAlgorithmType", "") or "UNKNOWN"))
     if not numbers:
         raise SystemExit("no tumor segments in " + seg_row["series_uid"])
     mask_volume = segmentation.get_volume(
-        combine_segments=False, segment_numbers=numbers, allow_missing_positions=True
-    ).match_geometry(volume)
+        combine_segments=False, segment_numbers=numbers, allow_missing_positions=True)
+    geometry = geometry_residuals(volume, mask_volume)
+    for key, tolerance in (
+            ("geometry_direction_defect", config.GEOMETRY_DIRECTION_TOLERANCE),
+            ("geometry_scale_residual", config.GEOMETRY_DIRECTION_TOLERANCE),
+            ("geometry_translation_residual",
+             config.GEOMETRY_TRANSLATION_TOLERANCE)):
+        if geometry[key] > tolerance:
+            raise SystemExit(
+                "{} of {} is {:.3e} against a tolerance of {:.3e}. The label "
+                "and the image describe different geometry and the mask would "
+                "be placed on tissue it does not describe.".format(
+                    key, patient_id, geometry[key], tolerance))
+    mask_volume = mask_volume.match_geometry(
+        volume, tol=config.GEOMETRY_TRANSLATION_TOLERANCE)
+    array = mask_volume.array
     per_segment = {
-        label: int(mask_volume.array[..., index].sum())
-        for index, label in enumerate(labels)
+        label: int(array[..., index].sum()) for index, label in enumerate(labels)
     }
-    return mask_volume.array.sum(axis=-1) > 0, per_segment
+
+    reviewed = np.zeros(array.shape[:-1], dtype=bool)
+    for index, algorithm in enumerate(algorithms):
+        if algorithm == config.CORRECTED_ALGORITHM_TYPE:
+            reviewed |= array[..., index] > 0
+    mask = array.sum(axis=-1) > 0
+    tumor_voxels = int(mask.sum())
+    reviewed_voxels = int((mask & reviewed).sum())
+    provenance = dict(geometry)
+    provenance.update({
+        "segment_algorithm_types": ";".join(
+            "{}={}".format(label, algorithm)
+            for label, algorithm in zip(labels, algorithms)
+        ),
+        # Counted from the segment list and not from per_segment, which is
+        # keyed by label and would collapse two segments sharing a label.
+        "segments_total": len(numbers),
+        "segments_reviewed": sum(
+            1 for a in algorithms if a == config.CORRECTED_ALGORITHM_TYPE),
+        "segments_unreviewed": sum(
+            1 for a in algorithms if a != config.CORRECTED_ALGORITHM_TYPE),
+        "tumor_voxels_reviewed": reviewed_voxels,
+        "tumor_voxels_unreviewed": tumor_voxels - reviewed_voxels,
+        "reviewed_voxel_share": (
+            reviewed_voxels / tumor_voxels if tumor_voxels else 0.0),
+        "unreviewed_voxel_share": (
+            1.0 - reviewed_voxels / tumor_voxels if tumor_voxels else 0.0),
+    })
+    return mask, per_segment, provenance
 
 
 def patch_grid(shape, size, stride):
@@ -188,6 +335,107 @@ def extract_patient(patient_id, volume, mask, rng):
     return patches, labels, index, summary
 
 
+def geometry_findings(summaries, models):
+    """The geometry residuals, in the finding form stage 3 writes.
+
+    Three kinds of row are produced. One row per pair whose translation
+    residual exceeds ``config.GEOMETRY_DEFAULT_TOLERANCE`` names the pair that
+    the library default would have stopped, because that count is the reason a
+    tolerance is passed at all. One row per scanner model reports how many of
+    its pairs exceed that default, so that the residual is attributed to the
+    equipment it came from and not to the cohort as a whole. One cohort row
+    carries the largest residual and what it displaces. The per-pair and cohort
+    rows are flagged, and a scanner row is flagged when any of its pairs
+    exceeds the default.
+
+    ``models`` maps a patient identifier to the manufacturer and model of its
+    image series, which the manifest records.
+    """
+    findings = []
+    ordered = sorted(summaries,
+                     key=lambda s: -s["geometry_translation_residual"])
+    for summary in ordered:
+        if (summary["geometry_translation_residual"]
+                <= config.GEOMETRY_DEFAULT_TOLERANCE):
+            continue
+        findings.append({
+            "check": "segmentation_geometry_residual",
+            "subject": summary["patient_id"],
+            "detail": "on {} the translation between the image origin and the "
+                      "segmentation origin leaves {:.3e} voxels against a whole "
+                      "number of voxels, which displaces the mask {:.3e} mm, "
+                      "above the {:.3e} library default and against a tolerance "
+                      "of {:.3e}".format(
+                          models[summary["patient_id"]],
+                          summary["geometry_translation_residual"],
+                          summary["geometry_translation_displacement_mm"],
+                          config.GEOMETRY_DEFAULT_TOLERANCE,
+                          config.GEOMETRY_TRANSLATION_TOLERANCE),
+            "flagged": 1,
+        })
+
+    by_model = {}
+    for summary in summaries:
+        by_model.setdefault(models[summary["patient_id"]], []).append(summary)
+    for model, group in sorted(by_model.items()):
+        above = [s for s in group
+                 if s["geometry_translation_residual"]
+                 > config.GEOMETRY_DEFAULT_TOLERANCE]
+        findings.append({
+            "check": "segmentation_geometry_by_scanner",
+            "subject": model,
+            "detail": "{} of {} pairs exceed the {:.3e} library default, "
+                      "largest {:.3e} voxels".format(
+                          len(above), len(group),
+                          config.GEOMETRY_DEFAULT_TOLERANCE,
+                          max(s["geometry_translation_residual"] for s in group)),
+            "flagged": int(bool(above)),
+        })
+
+    worst = ordered[0]
+    exceeded = sum(1 for s in summaries
+                   if s["geometry_translation_residual"]
+                   > config.GEOMETRY_DEFAULT_TOLERANCE)
+    findings.append({
+        "check": "segmentation_geometry_consistency",
+        "subject": "cohort",
+        "detail": "{} of {} image and segmentation pairs leave a translation "
+                  "residual above the {:.3e} library default, largest {:.3e} "
+                  "voxels on {}, which displaces the mask {:.3e} mm, against a "
+                  "tolerance of {:.3e}".format(
+                      exceeded, len(summaries),
+                      config.GEOMETRY_DEFAULT_TOLERANCE,
+                      worst["geometry_translation_residual"],
+                      worst["patient_id"],
+                      worst["geometry_translation_displacement_mm"],
+                      config.GEOMETRY_TRANSLATION_TOLERANCE),
+        "flagged": 1,
+    })
+    return findings
+
+
+def append_geometry_findings(findings):
+    """Add the geometry findings to the table stage 3 wrote, and return it.
+
+    Stage 3 writes ``results/qc_findings.csv`` from the image headers and stage
+    4 runs after it, so the table is read back and rewritten with these rows
+    appended. Rows carrying one of :data:`GEOMETRY_CHECKS` are dropped first,
+    which makes a second stage 4 over the same cohort leave the table it found.
+    """
+    if not QC_TABLE.exists():
+        raise SystemExit(
+            "results/qc_findings.csv is absent. Stage 03 writes it and stage 04 "
+            "adds to it, so stage 03 has to run first.")
+    with open(QC_TABLE, newline="", encoding="utf-8") as handle:
+        reader = csv.DictReader(handle)
+        columns = list(reader.fieldnames)
+        kept = [row for row in reader if row["check"] not in GEOMETRY_CHECKS]
+    rows = kept + [{column: finding[column] for column in columns}
+                   for finding in findings]
+    write_table(rows, QC_TABLE, columns)
+    return rows
+
+
 def build():
     banner("stage 04 patches")
     pairs = labeled_pairs()
@@ -197,7 +445,7 @@ def build():
     segment_totals = {label: 0 for label in config.TUMOR_SEGMENT_LABELS}
     for position, (patient_id, image_row, seg_row) in enumerate(pairs, start=1):
         volume = load_volume(patient_id, image_row)
-        mask, per_segment = load_mask(patient_id, seg_row, volume)
+        mask, per_segment, provenance = load_mask(patient_id, seg_row, volume)
         for label, count in per_segment.items():
             segment_totals[label] += count
         patches, labels, index, summary = extract_patient(
@@ -205,6 +453,7 @@ def build():
         )
         summary["segments_present"] = len(per_segment)
         summary["algorithm_type"] = seg_row["algorithm_type"]
+        summary.update(provenance)
         all_patches.append(patches)
         all_labels.append(labels)
         all_index.append(index)
@@ -231,7 +480,10 @@ def build():
         "patches_total": int(len(y)),
         "patches_positive": int(y.sum()),
         "patches_negative": int((y == 0).sum()),
-        "patches_positive_rate": float(y.mean()),
+        # The rate the sampling produces and not a property of the tumors.
+        # config.SAMPLED_POSITIVE_RATE fixes it; the measured rate before
+        # sampling is patches_natural_positive_rate_median below.
+        "patches_positive_rate_fixed_by_sampling": float(y.mean()),
         "patches_patients": len(pairs),
         "patches_min_per_patient": int(min(len(a) for a in all_labels)),
         "patches_max_per_patient": int(max(len(a) for a in all_labels)),
@@ -255,7 +507,86 @@ def build():
         "segment_voxels_edema": segment_totals["Edema"],
         "segment_voxels_enhancing_lesion": segment_totals["Enhancing Lesion"],
     })
+
+    # Where the segmentation sits against the image grid. highdicom will not
+    # place one on the other until the direction vectors, the spacings and the
+    # translation between the two origins all agree to within its tolerance,
+    # and five of the 49 pairs exceed the 1e-5 that tolerance defaults to. The
+    # residuals are recorded per pair in results/patch_summary.csv and
+    # summarized here, so the tolerance config carries can be read against what
+    # the cohort holds. The displacement is the distance the mask would move if
+    # the residual were a position the two series disagree on.
+    translation = [s["geometry_translation_residual"] for s in summaries]
+    displacement = [s["geometry_translation_displacement_mm"] for s in summaries]
+    metrics.update({
+        "geometry_pairs_measured": len(summaries),
+        "geometry_translation_tolerance": config.GEOMETRY_TRANSLATION_TOLERANCE,
+        "geometry_direction_tolerance": config.GEOMETRY_DIRECTION_TOLERANCE,
+        "geometry_default_tolerance": config.GEOMETRY_DEFAULT_TOLERANCE,
+        "geometry_max_translation_residual": float(max(translation)),
+        "geometry_median_translation_residual": float(np.median(translation)),
+        "geometry_max_translation_displacement_mm": float(max(displacement)),
+        "geometry_max_direction_defect": float(max(
+            s["geometry_direction_defect"] for s in summaries)),
+        "geometry_max_scale_residual": float(max(
+            s["geometry_scale_residual"] for s in summaries)),
+        "geometry_pairs_above_default_tolerance": sum(
+            1 for v in translation if v > config.GEOMETRY_DEFAULT_TOLERANCE),
+        "geometry_worst_pair": max(
+            summaries, key=lambda s: s["geometry_translation_residual"])["patient_id"],
+    })
+
+    # The same residuals as findings, so that a reader who opens the quality
+    # control table sees them beside the orientation findings stage 3 recorded
+    # from the image headers. Stage 3 counts its own rows into
+    # qc_findings_total and qc_findings_flagged; those two are restated here
+    # over the table stage 4 leaves behind, so that the counts continue to
+    # describe the whole file and not the part of it one stage wrote.
+    models = {patient_id: image_row["manufacturer"] + " " + image_row["model_name"]
+              for patient_id, image_row, _ in pairs}
+    findings = append_geometry_findings(geometry_findings(summaries, models))
+    metrics.update({
+        "qc_findings_total": len(findings),
+        "qc_findings_flagged": sum(int(row["flagged"]) for row in findings),
+    })
+
+    # How much of the positive label a person actually reviewed. The cohort
+    # filter accepts a segmentation series when any one of its segments is
+    # SEMIAUTOMATIC, so a positive patch can rest on a segment nobody looked
+    # at. These are the numbers that say how often that happens and by how
+    # much; a claim that the labels are radiologist-corrected is only as strong
+    # as label_reviewed_voxel_share.
+    tumor_total = sum(s["tumor_voxels"] for s in summaries)
+    reviewed_total = sum(s["tumor_voxels_reviewed"] for s in summaries)
+    shares = [s["reviewed_voxel_share"] for s in summaries]
+    metrics.update({
+        "label_tumor_voxels": tumor_total,
+        "label_tumor_voxels_reviewed": reviewed_total,
+        "label_tumor_voxels_unreviewed": tumor_total - reviewed_total,
+        "label_reviewed_voxel_share": float(reviewed_total / max(tumor_total, 1)),
+        "label_unreviewed_voxel_share": float(
+            1.0 - reviewed_total / max(tumor_total, 1)),
+        "label_reviewed_voxel_share_min": float(min(shares)),
+        "label_reviewed_voxel_share_median": float(np.median(shares)),
+        "label_reviewed_voxel_share_max": float(max(shares)),
+        "label_patients_fully_reviewed": sum(1 for v in shares if v >= 1.0),
+        "label_patients_with_unreviewed_voxels": sum(1 for v in shares if v < 1.0),
+        "label_segments_reviewed": sum(s["segments_reviewed"] for s in summaries),
+        "label_segments_unreviewed": sum(s["segments_unreviewed"] for s in summaries),
+    })
     metrics.save()
+    print("{:.1f} percent of positive tumor voxels come from a reviewed segment; "
+          "{} of {} patients carry unreviewed voxels".format(
+              100 * reviewed_total / max(tumor_total, 1),
+              sum(1 for v in shares if v < 1.0), len(shares)))
+    print("largest translation residual {:.3e} voxels on {}, which displaces the "
+          "mask {:.3e} mm, against a tolerance of {:.3e}; {} of {} pairs exceed "
+          "{:.3e}".format(
+              max(translation),
+              metrics.get("geometry_worst_pair"), max(displacement),
+              config.GEOMETRY_TRANSLATION_TOLERANCE,
+              metrics.get("geometry_pairs_above_default_tolerance"),
+              len(summaries), config.GEOMETRY_DEFAULT_TOLERANCE))
     print("{} patches from {} patients, {:.1f} percent positive".format(
         len(y), len(pairs), 100 * y.mean()))
     return X, y, patients

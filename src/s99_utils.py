@@ -177,6 +177,28 @@ class Metrics:
                 writer.writerow([key, self.values[key]])
 
 
+def record_signature(path: Path = config.METRICS) -> str:
+    """A digest of the recorded quantities that a re-run reproduces exactly.
+
+    The two notebooks display the record and compute nothing of their own, so a
+    stored notebook output belongs to whichever record was on disk when the
+    notebook last ran. Each of them prints this digest, and gate 07 recomputes
+    it from ``results/metrics.csv`` and compares. The wall-clock timings and the
+    three keys named in ``config.RECORD_VOLATILE_KEYS`` are left out, because
+    they differ between two runs that agree on every measured quantity.
+    """
+    with open(path, newline="", encoding="utf-8") as handle:
+        pairs = [
+            (row["key"], row["value"])
+            for row in csv.DictReader(handle)
+            if not row["key"].startswith(config.RECORD_TIMING_PREFIX)
+            and row["key"] not in config.RECORD_VOLATILE_KEYS
+        ]
+    text = "\n".join(f"{key}={value}" for key, value in sorted(pairs))
+    digest = hashlib.sha256(text.encode()).hexdigest()
+    return digest[:config.RECORD_SIGNATURE_DIGITS]
+
+
 def write_table(rows: Iterable[dict], path: Path, columns: Sequence[str] | None = None) -> int:
     rows = list(rows)
     if not rows:

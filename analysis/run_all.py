@@ -44,10 +44,17 @@ def main() -> int:
     total = time.time() - started
     metrics = Metrics()
     metrics.set("pipeline_seconds", round(total, 1))
+    # Two entries share the number 03, so the seconds of this run are summed
+    # by key before they are written. The sum is taken over ``timings`` and not
+    # over what the metrics record already holds, because that record is loaded
+    # from the previous run and adding to it would make every stage report the
+    # total of every run the file has ever seen.
+    by_stage: dict[str, float] = {}
     for name, seconds in timings:
         key = "pipeline_seconds_stage_" + name.split()[0]
-        metrics.set(key, round(metrics.number(key) + seconds, 1)
-                    if key in metrics.values else round(seconds, 1))
+        by_stage[key] = by_stage.get(key, 0.0) + seconds
+    for key, seconds in by_stage.items():
+        metrics.set(key, round(seconds, 1))
     metrics.set("metrics_recorded", len(metrics.values) + 1)
     metrics.save()
 

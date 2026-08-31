@@ -1,6 +1,13 @@
 check,subject,detail,flagged
-scanner_combination,SIEMENS TrioTim,235 series across 41 patients,0
-modality,MR,235 series,0
+scanner_combination,SIEMENS TrioTim,239 series across 42 patients,0
+scanner_combination,SIEMENS Espree,12 series across 3 patients,0
+scanner_combination,SIEMENS Avanto,8 series across 2 patients,0
+scanner_combination,SIEMENS Verio,6 series across 1 patients,0
+scanner_combination,GE MEDICAL SYSTEMS DISCOVERY MR750w,4 series across 1 patients,0
+scanner_combination,SIEMENS SymphonyTim,4 series across 1 patients,0
+scanner_heterogeneity,cohort,"6 manufacturer and model combinations, largest holds 87.5 percent of series",1
+scanners_per_patient,UPENN-GBM-00542,2 manufacturer and model combinations,1
+modality,MR,273 series,0
 first_last_dimensions,UPENN-GBM-00019,256x192 then 256x192,0
 first_last_dimensions,UPENN-GBM-00020,896x896 then 256x192,1
 first_last_dimensions,UPENN-GBM-00032,256x192 then 256x192,0
@@ -22,9 +29,11 @@ first_last_dimensions,UPENN-GBM-00245,128x128 then 256x192,1
 first_last_dimensions,UPENN-GBM-00251,256x192 then 320x256,1
 first_last_dimensions,UPENN-GBM-00264,256x192 then 896x896,1
 first_last_dimensions,UPENN-GBM-00272,256x192 then 896x896,1
+first_last_dimensions,UPENN-GBM-00322,256x192 then 256x192,0
 first_last_dimensions,UPENN-GBM-00334,256x192 then 256x208,1
 first_last_dimensions,UPENN-GBM-00338,896x896 then 256x208,1
 first_last_dimensions,UPENN-GBM-00350,256x192 then 128x128,1
+first_last_dimensions,UPENN-GBM-00357,256x192 then 256x192,0
 first_last_dimensions,UPENN-GBM-00365,256x192 then 128x128,1
 first_last_dimensions,UPENN-GBM-00374,256x192 then 256x208,1
 first_last_dimensions,UPENN-GBM-00386,256x192 then 256x208,1
@@ -35,12 +44,18 @@ first_last_dimensions,UPENN-GBM-00418,128x128 then 256x192,1
 first_last_dimensions,UPENN-GBM-00421,896x896 then 256x192,1
 first_last_dimensions,UPENN-GBM-00435,256x208 then 256x192,1
 first_last_dimensions,UPENN-GBM-00438,256x208 then 896x896,1
+first_last_dimensions,UPENN-GBM-00452,512x512 then 512x512,0
 first_last_dimensions,UPENN-GBM-00459,256x192 then 256x192,0
 first_last_dimensions,UPENN-GBM-00468,256x192 then 256x192,0
+first_last_dimensions,UPENN-GBM-00487,512x448 then 512x416,1
+first_last_dimensions,UPENN-GBM-00494,512x416 then 512x416,0
 first_last_dimensions,UPENN-GBM-00502,256x192 then 256x208,1
 first_last_dimensions,UPENN-GBM-00518,256x192 then 256x192,0
 first_last_dimensions,UPENN-GBM-00534,256x192 then 256x192,0
+first_last_dimensions,UPENN-GBM-00542,512x416 then 256x192,1
 first_last_dimensions,UPENN-GBM-00587,256x192 then 256x208,1
+first_last_dimensions,UPENN-GBM-00609,384x336 then 512x448,1
+first_last_dimensions,UPENN-GBM-00625,512x384 then 512x384,0
 first_last_dimensions,UPENN-GBM-00626,256x192 then 256x208,1
 distinct_grids_per_patient,UPENN-GBM-00019,4 distinct row and column combinations,1
 distinct_grids_per_patient,UPENN-GBM-00020,4 distinct row and column combinations,1
@@ -63,9 +78,11 @@ distinct_grids_per_patient,UPENN-GBM-00245,4 distinct row and column combination
 distinct_grids_per_patient,UPENN-GBM-00251,3 distinct row and column combinations,1
 distinct_grids_per_patient,UPENN-GBM-00264,4 distinct row and column combinations,1
 distinct_grids_per_patient,UPENN-GBM-00272,3 distinct row and column combinations,1
+distinct_grids_per_patient,UPENN-GBM-00322,3 distinct row and column combinations,1
 distinct_grids_per_patient,UPENN-GBM-00334,4 distinct row and column combinations,1
 distinct_grids_per_patient,UPENN-GBM-00338,4 distinct row and column combinations,1
 distinct_grids_per_patient,UPENN-GBM-00350,4 distinct row and column combinations,1
+distinct_grids_per_patient,UPENN-GBM-00357,4 distinct row and column combinations,1
 distinct_grids_per_patient,UPENN-GBM-00365,4 distinct row and column combinations,1
 distinct_grids_per_patient,UPENN-GBM-00374,4 distinct row and column combinations,1
 distinct_grids_per_patient,UPENN-GBM-00386,3 distinct row and column combinations,1
@@ -76,20 +93,31 @@ distinct_grids_per_patient,UPENN-GBM-00418,4 distinct row and column combination
 distinct_grids_per_patient,UPENN-GBM-00421,4 distinct row and column combinations,1
 distinct_grids_per_patient,UPENN-GBM-00435,4 distinct row and column combinations,1
 distinct_grids_per_patient,UPENN-GBM-00438,3 distinct row and column combinations,1
+distinct_grids_per_patient,UPENN-GBM-00452,1 distinct row and column combinations,0
 distinct_grids_per_patient,UPENN-GBM-00459,4 distinct row and column combinations,1
 distinct_grids_per_patient,UPENN-GBM-00468,4 distinct row and column combinations,1
+distinct_grids_per_patient,UPENN-GBM-00487,2 distinct row and column combinations,1
+distinct_grids_per_patient,UPENN-GBM-00494,2 distinct row and column combinations,1
 distinct_grids_per_patient,UPENN-GBM-00502,3 distinct row and column combinations,1
 distinct_grids_per_patient,UPENN-GBM-00518,4 distinct row and column combinations,1
 distinct_grids_per_patient,UPENN-GBM-00534,4 distinct row and column combinations,1
+distinct_grids_per_patient,UPENN-GBM-00542,3 distinct row and column combinations,1
 distinct_grids_per_patient,UPENN-GBM-00587,3 distinct row and column combinations,1
+distinct_grids_per_patient,UPENN-GBM-00609,2 distinct row and column combinations,1
+distinct_grids_per_patient,UPENN-GBM-00625,4 distinct row and column combinations,1
 distinct_grids_per_patient,UPENN-GBM-00626,4 distinct row and column combinations,1
-photometric_interpretation,MONOCHROME2,235 series,0
-bits_allocated,16,235 series,0
+photometric_interpretation,MONOCHROME2,273 series,0
+bits_allocated,16,273 series,0
+non_structural_series,AX EP2D DTI 30 DIR TRACTOGRAPHY,1 series,1
+non_structural_series,MDDW DTI AXIAL 30 DIRECTION,1 series,1
+non_structural_series,PERFUSION BOLUS,1 series,1
+non_structural_series,PERFUSION GRE,2 series,1
 non_structural_series,ep2d_DTI_30dir,25 series,1
 non_structural_series,ep2d_DTI_30dir_T,7 series,1
 non_structural_series,ep2d_DTI_30dir_TERA,2 series,1
 non_structural_series,ep2d_DTI_30dir_TERA ONLY FIRST DTI,2 series,1
 non_structural_series,ep2d_diff_MDDW_IPAT,3 series,1
+non_structural_series,ep2d_diff_mddw_20_p2 DTI,1 series,1
 non_structural_series,ep2d_perf 12 CC BOLUS,10 series,1
 non_structural_series,ep2d_perf 3cc pre 12bolus,1 series,1
 non_structural_series,ep2d_perf BOLUS,12 series,1
@@ -101,3 +129,22 @@ within_series_constant,manufacturer,0 series carry more than one value,0
 within_series_constant,model_name,0 series carry more than one value,0
 within_series_constant,photometric_interpretation,0 series carry more than one value,0
 within_series_constant,rows,0 series carry more than one value,0
+orientation_present,cohort,0 of 59713 instances carry no ImageOrientationPatient,0
+orientation_variants_per_series,1,270 series,0
+orientation_variants_per_series,5,3 series,1
+series_orientation_variants,1.3.6.1.4.1.14519.5.2.1.100779051530946960217899529946569623403,"UPENN-GBM-00452 on GE MEDICAL SYSTEMS DISCOVERY MR750w carries 5 distinct ImageOrientationPatient values across 35 instances, largest deviation 7.772e-15 from the modal value against a tolerance of 1.000e-05",1
+series_orientation_variants,1.3.6.1.4.1.14519.5.2.1.165935715030945008290591612948403500212,"UPENN-GBM-00452 on GE MEDICAL SYSTEMS DISCOVERY MR750w carries 5 distinct ImageOrientationPatient values across 33 instances, largest deviation 5.107e-15 from the modal value against a tolerance of 1.000e-05",1
+series_orientation_variants,1.3.6.1.4.1.14519.5.2.1.273890320234540106184849208379248824106,"UPENN-GBM-00452 on GE MEDICAL SYSTEMS DISCOVERY MR750w carries 5 distinct ImageOrientationPatient values across 33 instances, largest deviation 5.107e-15 from the modal value against a tolerance of 1.000e-05",1
+orientation_consistency,cohort,"3 of 273 series carry more than one ImageOrientationPatient value, largest deviation 7.772e-15 against a tolerance of 1.000e-05",1
+segmentation_geometry_residual,UPENN-GBM-00452,"on GE MEDICAL SYSTEMS DISCOVERY MR750w the translation between the image origin and the segmentation origin leaves 1.736e-03 voxels against a whole number of voxels, which displaces the mask 8.138e-04 mm, above the 1.000e-05 library default and against a tolerance of 2.000e-02",1
+segmentation_geometry_residual,UPENN-GBM-00625,"on SIEMENS Verio the translation between the image origin and the segmentation origin leaves 5.195e-05 voxels against a whole number of voxels, which displaces the mask 2.536e-05 mm, above the 1.000e-05 library default and against a tolerance of 2.000e-02",1
+segmentation_geometry_residual,UPENN-GBM-00487,"on SIEMENS Avanto the translation between the image origin and the segmentation origin leaves 3.506e-05 voxels against a whole number of voxels, which displaces the mask 1.753e-04 mm, above the 1.000e-05 library default and against a tolerance of 2.000e-02",1
+segmentation_geometry_residual,UPENN-GBM-00609,"on SIEMENS SymphonyTim the translation between the image origin and the segmentation origin leaves 1.787e-05 voxels against a whole number of voxels, which displaces the mask 8.506e-05 mm, above the 1.000e-05 library default and against a tolerance of 2.000e-02",1
+segmentation_geometry_residual,UPENN-GBM-00494,"on SIEMENS Avanto the translation between the image origin and the segmentation origin leaves 1.317e-05 voxels against a whole number of voxels, which displaces the mask 4.338e-05 mm, above the 1.000e-05 library default and against a tolerance of 2.000e-02",1
+segmentation_geometry_by_scanner,GE MEDICAL SYSTEMS DISCOVERY MR750w,"1 of 1 pairs exceed the 1.000e-05 library default, largest 1.736e-03 voxels",1
+segmentation_geometry_by_scanner,SIEMENS Avanto,"2 of 2 pairs exceed the 1.000e-05 library default, largest 3.506e-05 voxels",1
+segmentation_geometry_by_scanner,SIEMENS Espree,"0 of 2 pairs exceed the 1.000e-05 library default, largest 8.457e-06 voxels",0
+segmentation_geometry_by_scanner,SIEMENS SymphonyTim,"1 of 1 pairs exceed the 1.000e-05 library default, largest 1.787e-05 voxels",1
+segmentation_geometry_by_scanner,SIEMENS TrioTim,"0 of 42 pairs exceed the 1.000e-05 library default, largest 9.069e-06 voxels",0
+segmentation_geometry_by_scanner,SIEMENS Verio,"1 of 1 pairs exceed the 1.000e-05 library default, largest 5.195e-05 voxels",1
+segmentation_geometry_consistency,cohort,"5 of 49 image and segmentation pairs leave a translation residual above the 1.000e-05 library default, largest 1.736e-03 voxels on UPENN-GBM-00452, which displaces the mask 8.138e-04 mm, against a tolerance of 2.000e-02",1

@@ -18,7 +18,7 @@ import numpy as np
 from . import config
 from .s04_patches import load_patches, labeled_pairs, load_mask, load_volume
 from .s05_splits import load_splits
-from .s06_model import load_model, predict
+from .s06_model import GRID_SELECTION_CRITERION, load_model, predict
 from .s99_utils import Metrics, banner
 
 plt.rcParams.update({
@@ -111,7 +111,9 @@ def fig_alignment():
     """One slice with its resampled mask, the check that the label lines up."""
     patient_id, image_row, seg_row = labeled_pairs()[0]
     volume = load_volume(patient_id, image_row)
-    mask, _ = load_mask(patient_id, seg_row, volume)
+    # load_mask returns the mask, the per-segment voxel counts and the
+    # provenance of the label; only the mask is drawn here.
+    mask, _, _ = load_mask(patient_id, seg_row, volume)
     image = volume.array.astype(np.float32)
     image = image / max(float(np.percentile(image[image > 0], 99.5)), 1e-6)
     per_slice = mask.reshape(len(image), -1).sum(1)
@@ -194,7 +196,7 @@ def fig_grid_search():
         values = [
             float(next(r for r in rows
                        if float(r["learning_rate"]) == rate
-                       and float(r["dropout"]) == dropout)["validation_roc_auc_final"])
+                       and float(r["dropout"]) == dropout)[GRID_SELECTION_CRITERION])
             for rate in rates
         ]
         axis.bar(positions + (offset - 0.5) * width, values, width,
@@ -205,12 +207,20 @@ def fig_grid_search():
     axis.set_xlabel("Adadelta learning rate")
     axis.set_ylabel("validation ROC-AUC")
     axis.set_ylim(0.5, 1.0)
+    # The bars are the criterion the configuration was chosen on, which is the
+    # score at the epoch each grid run would keep.
     axis.set_title("Grid search, scored on the validation patients")
     axis.legend(frameon=False)
     return save(figure, "fig08_grid_search.png")
 
 
 def fig_history():
+    """Training loss and validation ROC-AUC, with the retained epoch marked.
+
+    The vertical line is the epoch whose weights the reported model uses. It is
+    drawn because the curve alone does not say which point on it was kept, and
+    the last epoch is not that point.
+    """
     rows = table("training_history")
     epochs = [int(r["epoch"]) for r in rows]
     figure, axis = plt.subplots(figsize=(5.6, 3.2))
@@ -223,6 +233,11 @@ def fig_history():
               label="validation ROC-AUC")
     twin.set_ylabel("validation ROC-AUC", color=ORANGE)
     twin.grid(False)
+    selected = next(int(r["epoch"]) for r in rows if int(r["is_selected_epoch"]))
+    axis.axvline(selected, color=GRAY, linestyle="--", linewidth=1)
+    axis.annotate("epoch {} kept".format(selected), (selected, 0.98),
+                  xycoords=("data", "axes fraction"), ha="right", va="top",
+                  fontsize=8, color=GRAY, rotation=90)
     axis.set_title("Training")
     return save(figure, "fig09_training_history.png")
 
@@ -233,8 +248,15 @@ def fig_roc():
     fpr = [float(r["false_positive_rate"]) for r in rows]
     tpr = [float(r["true_positive_rate"]) for r in rows]
     figure, axis = plt.subplots(figsize=(4.4, 4.0))
+    # The interval comes from resampling the thirteen test patients, so the label
+    # carries the room the point estimate actually has.
     axis.plot(fpr, tpr, color=BLUE,
-              label="test, AUC {:.3f}".format(metrics.number("eval_test_roc_auc")))
+              label="test, AUC {:.3f}\n{:.0f} percent interval {:.3f} to "
+                    "{:.3f}".format(
+                        metrics.number("eval_test_roc_auc"),
+                        100 * metrics.number("eval_test_roc_auc_bootstrap_interval"),
+                        metrics.number("eval_test_roc_auc_bootstrap_low"),
+                        metrics.number("eval_test_roc_auc_bootstrap_high")))
     axis.plot([0, 1], [0, 1], color=GRAY, linestyle="--", linewidth=1)
     axis.set_xlabel("false positive rate")
     axis.set_ylabel("true positive rate")
@@ -280,17 +302,34 @@ def fig_per_patient():
 
 
 def fig_leakage():
+    """The two partitions at the primary seed, drawn over the range across seeds.
+
+    The bars are the primary-seed scores the text quotes. The points are the
+    scores at every seed in ``config.SEED_LIST``, so that the difference
+    between the bars is read against the spread the seed alone produces and not
+    as a fixed quantity.
+    """
     metrics = Metrics()
     honest = metrics.number("leakage_test_roc_auc_patient_split")
     leaky = metrics.number("leakage_test_roc_auc_patch_split")
-    figure, axis = plt.subplots(figsize=(4.4, 3.2))
-    axis.bar(["split by patient", "split by patch"], [honest, leaky],
-             color=[BLUE, ORANGE])
-    for position, value in enumerate([honest, leaky]):
-        axis.text(position, value + 0.01, "{:.3f}".format(value), ha="center")
+    variance = table("seed_variance")
+    labels = ["split by patient", "split by patch"]
+    per_seed = [
+        [float(r["test_roc_auc"]) for r in variance if r["split_unit"] == part]
+        for part in ("patient", "patch")
+    ]
+    figure, axis = plt.subplots(figsize=(4.8, 3.4))
+    axis.bar(labels, [honest, leaky], color=[BLUE, ORANGE])
+    for position, values in enumerate(per_seed):
+        axis.plot([position] * len(values), values, "o", color=GRAY,
+                  markersize=4, zorder=3)
+        axis.text(position, max(values) + 0.015,
+                  "{:.3f}".format([honest, leaky][position]), ha="center")
     axis.set_ylim(0.5, 1.05)
     axis.set_ylabel("test ROC-AUC")
     axis.set_title("The same model under two partitions")
+    axis.set_xlabel("bars are the primary seed, points are {} seeds".format(
+        len(config.SEED_LIST)), fontsize=8)
     return save(figure, "fig13_split_leakage.png")
 
 

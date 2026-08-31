@@ -33,6 +33,14 @@ def _coerce(value, kind: str):
         return int(value)
     if kind == "float":
         return float(value)
+    if kind == "decimal_string":
+        # A multi-valued decimal string, written back in the DICOM form with a
+        # backslash between the values. The reading library's own text form
+        # brackets the list and separates it with commas, which is not what the
+        # standard stores and is not what stage 3 parses.
+        if isinstance(value, str):
+            return value.strip()
+        return "\\".join(str(item) for item in value)
     if kind == "date":
         text = str(value)
         return f"{text[0:4]}-{text[4:6]}-{text[6:8]}" if len(text) == 8 else text
