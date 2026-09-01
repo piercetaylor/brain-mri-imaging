@@ -55,7 +55,12 @@ def main() -> int:
         by_stage[key] = by_stage.get(key, 0.0) + seconds
     for key, seconds in by_stage.items():
         metrics.set(key, round(seconds, 1))
-    metrics.set("metrics_recorded", len(metrics.values) + 1)
+    # The key is written before the count is taken, because the record is
+    # loaded from the previous run and may already hold it. Adding one to a
+    # length that already counts the key overstates the record by one, which a
+    # run from a cleared results/ never shows and every re-run does.
+    metrics.set("metrics_recorded", 0)
+    metrics.set("metrics_recorded", len(metrics.values))
     metrics.save()
 
     print("\n--- pipeline ---")
