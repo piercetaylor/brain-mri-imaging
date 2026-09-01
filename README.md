@@ -113,10 +113,11 @@ and excluded from the labeled task, leaving 196 structural series.
 ### Geometry defects that appear only across manufacturers
 
 Assembling a series into a volume compares the `ImageOrientationPatient` of
-every slice. Of the 273 series, 3 carry more than one value, and one of them
-carries 5 distinct values across 35 slices, differing in the seventh decimal
-place. All three belong to the single patient scanned on the one non-Siemens
-model. The largest genuine angular disagreement anywhere in the cohort is
+every slice. Of the 273 series, 3 carry more than one value, and each carries 5
+distinct values. The widest spread sits on a series of 35 slices and differs in
+the seventh decimal place. All three belong to the single patient scanned on the
+one non-Siemens model. The largest genuine angular disagreement anywhere in the
+cohort is
 7.772e-15 in cosine similarity, which displaces about 31 nanometers across the
 widest field of view. No real reorientation exists in the data, and the volume
 assembly is given a tolerance of 1e-05, with the measured deviation recorded per
@@ -186,7 +187,7 @@ radiologist-corrected without that qualification would overstate them.
 The network is the architecture the coursework specified: three convolutional
 blocks with 16, 16 and 64 filters, batch normalization on the second and third,
 max pooling after each, then a 64 unit dense layer, dropout, and one sigmoid
-output. It holds 77,585 parameters and trains in 178.4 seconds on a CPU.
+output. It holds 77,585 parameters and trains in 208 seconds on a CPU.
 
 Patients were assigned whole to the training, validation and test sets, 29, 7
 and 13 of them. No patient appears in more than one part. Accuracy below is read
@@ -358,8 +359,8 @@ python -m src.s01_manifest && python data/download_data.py && python analysis/ru
 
 The first command builds the cohort manifest from the data commons index. The
 second downloads 9.44 GB and verifies it against `data/checksums.txt`. The third
-runs stages 02 to 08 and touches no network. That run takes 1,481.1 seconds on a
-CPU, of which the modeling stage takes 1,290.8. The modeling stage fits the four
+runs stages 02 to 08 and touches no network. That run takes 1,674.8 seconds on a
+CPU, of which the modeling stage takes 1,458.5. The modeling stage fits the four
 point grid and then trains six models, three seeds on each of the two
 partitions. The primary seed is 20251117.
 
@@ -374,7 +375,7 @@ grid, and `scanner_inventory.csv` the equipment counts.
 patient counts, and `qc_findings.csv` the per-series findings. A few figures are
 differences or ratios of recorded quantities, and each is written beside the
 quantities it is taken from. Three of the recorded quantities describe the
-repository and not the data, namely the 271 metrics, the 14 generated figures and
+repository and not the data, namely the 286 metrics, the 14 generated figures and
 the 149 quality-control findings. The gate tallies below are the gates' own
 printed output.
 
@@ -394,7 +395,10 @@ results/              generated tables and the recorded metrics
 
 Each stage ends in a gate that exits zero or non-zero and prints what it
 verified. The stages are acquisition, schema, quality control, preparation,
-modeling and reproducibility, with an environment gate ahead of them.
+modeling and reproducibility, with an environment gate ahead of them. Two gates
+stand outside the stages. One compares the stored output of each notebook
+against the record it read, and one compares the keys the record holds against
+the keys the source files write.
 
 The gates confirm that every downloaded series matches its recorded digest and
 that two services still report CC BY 4.0. They re-read a random sample of 40
@@ -405,19 +409,21 @@ growing toward a tolerance fails the gate before it reaches it. They confirm
 that no patient appears in more than one part of the split, that nothing outside
 the pixel array encodes the class, and that the saved model reproduces the
 reported test score when it is loaded again. The environment gate scans every
-tracked file for the vendor and product names it forbids. All seven pass:
-environment 31 of 31, acquisition 19 of 19, schema 33 of 33, quality control 30
-of 30, preparation 60 of 60, modeling 78 of 78 and reproducibility 11 of 11, for
-262 checks in all.
+tracked file for the vendor and product names it forbids. All nine pass:
+environment 24 of 24, acquisition 15 of 15, schema 24 of 24, quality control 22
+of 22, preparation 43 of 43, modeling 45 of 45, reproducibility 10 of 10,
+notebooks 21 of 21 and record 11 of 11, for 215 checks in all.
 
 The reproducibility gate does not run from an empty state. It clears `results/`,
 `data/interim/` and `figures/`, re-runs the cohort rule against the index,
 re-verifies every downloaded series against `data/checksums.txt` without
-re-fetching `data/raw/`, and re-runs stages 02 to 08. Every recorded quantity
-apart from wall-clock timings must reproduce exactly. Rebuilding the analysis
-from those cleared directories, 0 of the 260 compared quantities differ, and no
-key appears or disappears. The claim it supports is reproduction from a verified
-local copy of the images, and it says nothing about a different machine or a
+re-fetching `data/raw/`, and re-runs stages 02 to 08. Eleven of the 286 recorded
+quantities are held out of the comparison: nine wall-clock timings, the count the
+record states about itself, and the license verification. The remaining 275 must
+reproduce exactly. Rebuilding the analysis from those cleared directories, 0 of
+the 275 compared quantities differ, and no key appears or disappears. The claim
+it supports is reproduction from a verified local copy of the images, and it
+says nothing about a different machine or a
 different release of the numerical libraries.
 
 Findings are reported whichever way they came out. The previous cohort came out

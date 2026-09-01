@@ -132,8 +132,8 @@ voxels. Of the 49 image and segmentation pairs, 5 leave a residual above the
 residual is 1.7359e-03 voxels on `UPENN-GBM-00452`, whose mask would move
 8.1379e-04 mm along one axis, each figure the largest of the three axes. All
 five sit on scanner models the previous single-scanner cohort did not contain.
-The 44 pairs on the two models that produced none, holding 42 and 2 patients,
-sit below the default.
+The 44 pairs on the two models that produced none, holding 42 and 2 patients by
+the series the cohort rule admitted, sit below the default.
 
 Each residual was traced to the decimal string that produces it, so the
 classification is a measurement and not a judgment. One segmentation writes its
