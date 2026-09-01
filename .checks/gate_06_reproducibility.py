@@ -30,7 +30,7 @@ import shutil
 import subprocess
 import sys
 
-from gate_lib import ROOT, check, config, finish, gate, metrics, skip
+from gate_lib import ROOT, check, config, finish, gate, metrics, skip, unreachable
 
 gate("gate 06 reproducibility")
 
@@ -68,8 +68,11 @@ completed = subprocess.run(
     [sys.executable, "-m", "src.s01_manifest"], cwd=ROOT,
     capture_output=True, text=True)
 if completed.returncode != 0:
-    skip("cohort rule re-run", "index unreachable")
     shutil.copy(manifest_backup, config.MANIFEST)
+    printed = (completed.stderr or completed.stdout or "").strip().splitlines()
+    unreachable("the cohort rule reproduces data/manifest.csv byte for byte",
+                printed[-1] if printed
+                else "stage 01 exited {}".format(completed.returncode))
 else:
     check("the cohort rule reproduces data/manifest.csv byte for byte",
           config.MANIFEST.read_bytes() == manifest_backup.read_bytes(),

@@ -37,6 +37,34 @@ def _request(url: str, data: bytes | None = None, headers: dict | None = None):
     return urllib.request.Request(url, data=data, headers=hdr)
 
 
+def _open(request, timeout: int = 300) -> bytes:
+    """Send one prepared request, retrying the transient failures a long run hits.
+
+    ``_read`` already does this for a plain URL, and the index and the archive
+    were sending their requests without it, so one bad answer failed a stage or
+    a gate that a second attempt would have passed. A status the server owns,
+    500 and above, is retried. A status the request owns, 400 to 499, is raised
+    at once, because a renamed endpoint does not improve on the sixth attempt.
+    The last error is re-raised as itself, so a caller can tell a service that
+    did not answer from a service that answered with something unexpected.
+    """
+    last: Exception | None = None
+    for attempt in range(RETRIES):
+        try:
+            with urllib.request.urlopen(request, timeout=timeout) as response:
+                return response.read()
+        except urllib.error.HTTPError as error:
+            if error.code < 500:
+                raise
+            last = error
+            time.sleep(min(2 ** attempt, 30))
+        except (urllib.error.URLError, TimeoutError, ConnectionError,
+                OSError) as error:
+            last = error
+            time.sleep(min(2 ** attempt, 30))
+    raise last
+
+
 def _read(url: str, timeout: int = 300) -> bytes:
     """Fetch one URL, retrying on the transient failures a long run will hit."""
     last: Exception | None = None
@@ -58,8 +86,7 @@ def idc_sql(sql: str, max_rows: int = 5000) -> list[dict]:
         data=body,
         headers={"Content-Type": "application/json", "Accept": "application/json"},
     )
-    with urllib.request.urlopen(req, timeout=300) as response:
-        payload = json.loads(response.read().decode())
+    payload = json.loads(_open(req, timeout=300).decode())
     if payload.get("truncated"):
         raise RuntimeError(
             f"the index returned a truncated result for: {sql[:120]}..."
@@ -68,8 +95,8 @@ def idc_sql(sql: str, max_rows: int = 5000) -> list[dict]:
 
 
 def idc_version() -> dict:
-    with urllib.request.urlopen(_request(f"{config.IDC_API}/version"), timeout=120) as r:
-        return json.loads(r.read().decode())
+    return json.loads(
+        _open(_request(f"{config.IDC_API}/version"), timeout=120).decode())
 
 
 def nbia_get(endpoint: str, **params) -> Any:
@@ -77,8 +104,7 @@ def nbia_get(endpoint: str, **params) -> Any:
     url = f"{config.NBIA_API}/{endpoint}"
     if params:
         url += "?" + urllib.parse.urlencode(params)
-    with urllib.request.urlopen(_request(url), timeout=300) as response:
-        return json.loads(response.read().decode())
+    return json.loads(_open(_request(url), timeout=300).decode())
 
 
 def s3_list(prefix: str) -> list[tuple[str, int]]:

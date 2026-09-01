@@ -13,7 +13,8 @@ from __future__ import annotations
 import csv
 import sys
 
-from gate_lib import ROOT, check, config, finish, gate, metrics, skip, table
+from gate_lib import (ROOT, NETWORK_ERRORS, check, config, finish, gate,
+                      metrics, table, unreachable)
 
 sys.path.insert(0, str(ROOT))
 from src.s99_utils import idc_sql, nbia_get, sha256_series  # noqa: E402
@@ -98,22 +99,26 @@ try:
         "WHERE SeriesInstanceUID IN ({})".format(
             ", ".join("'" + uid + "'" for uid in sample))
     )
-    names = sorted(row["license"] for row in reported)
+except NETWORK_ERRORS as error:
+    unreachable("the data commons index reports the expected license", error)
+else:
+    names = sorted({row.get("license", "the license field is absent")
+                    for row in reported})
     check("the data commons index reports the expected license",
           names == [config.EXPECTED_LICENSE], ", ".join(names))
-except Exception as error:
-    skip("data commons license check", "index unreachable: {}".format(error))
 
+patient = sorted({r["patient_id"] for r in manifest})[0]
 try:
-    patient = sorted({r["patient_id"] for r in manifest})[0]
     series = nbia_get("getSeries", Collection=config.NBIA_COLLECTION,
                       PatientID=patient)
-    uris = sorted({s.get("LicenseURI", "") for s in series})
+except NETWORK_ERRORS as error:
+    unreachable("the archive that published the images reports CC BY 4.0", error)
+else:
+    uris = sorted({s.get("LicenseURI", "the LicenseURI field is absent")
+                   for s in series})
     check("the archive that published the images reports CC BY 4.0",
           uris == [config.EXPECTED_LICENSE_URI],
           "{}: {}".format(patient, ", ".join(uris)))
-except Exception as error:
-    skip("archive license check", "service unreachable: {}".format(error))
 
 recorded_metrics = metrics()
 check("the recorded download matches what is on disk",

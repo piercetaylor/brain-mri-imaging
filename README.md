@@ -409,10 +409,17 @@ growing toward a tolerance fails the gate before it reaches it. They confirm
 that no patient appears in more than one part of the split, that nothing outside
 the pixel array encodes the class, and that the saved model reproduces the
 reported test score when it is loaded again. The environment gate scans every
-tracked file for the vendor and product names it forbids. All nine pass:
-environment 24 of 24, acquisition 15 of 15, schema 24 of 24, quality control 22
-of 22, preparation 43 of 43, modeling 45 of 45, reproducibility 10 of 10,
-notebooks 21 of 21 and record 11 of 11, for 215 checks in all.
+tracked file for the vendor and product names it forbids. Every gate closes by
+asserting that no check read a quantity the record does not hold. All nine pass:
+environment 24 of 24, acquisition 16 of 16, schema 25 of 25, quality control 23
+of 23, preparation 44 of 44, modeling 46 of 46, reproducibility 11 of 11,
+notebooks 21 of 21 and record 11 of 11, for 221 checks in all.
+
+A gate reports what it did not run. A service that does not answer fails the
+check that needed it, and is skipped only when `ALLOW_OFFLINE` is set, so that a
+check cannot turn itself off when the service it tests moves. The suite counts
+those skips beside the gate that took them, because a skipped check asserts
+nothing.
 
 The reproducibility gate does not run from an empty state. It clears `results/`,
 `data/interim/` and `figures/`, re-runs the cohort rule against the index,
