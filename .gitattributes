@@ -1,0 +1,15 @@
+# Every text file in this repository is stored with LF, and text=auto holds it
+# there whatever a contributor's core.autocrlf is set to. No end-of-line form is
+# imposed on the working tree, so adding this file converts nothing: all 40
+# tracked text files are LF in the index already, 39 carrying line endings and
+# src/__init__.py empty.
+* text=auto
+
+# The two notebooks are JSON and are declared text, so that detection is not
+# left to guess at a cell holding encoded output, and so that a diff of a
+# notebook is readable and a merge of one is possible.
+*.ipynb text
+
+# The 14 figures are the only binary files this repository tracks. Marking them
+# keeps end-of-line conversion and diff off them.
+*.png binary

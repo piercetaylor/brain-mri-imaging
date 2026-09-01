@@ -281,6 +281,14 @@ ORIENTATION_TOLERANCE_MARGIN = 10.0
 # disagree on, and admitting one would move the mask off the tissue it
 # describes, so the tolerance is not sized to reach it.
 #
+# The residual and the displacement are each maximized over the three axes
+# independently, so the two need not fall on the same axis. On at least two
+# of the 49 pairs they do not. The displacement divided by the residual is
+# 4.759 on UPENN-GBM-00609 and 3.293 on UPENN-GBM-00494, and neither quotient
+# is a spacing this cohort carries. The displacement is the furthest the
+# segmentation would move along any one axis, so the bound the coordinate
+# strings impose falls on the displacement and not on the residual.
+#
 # GEOMETRY_TRANSLATION_TOLERANCE is 11.5 times the 1.736e-03 voxels the cohort
 # reaches. It admits 8.59e-03 mm at the finest spacing in the cohort, 0.429687
 # mm, and 0.120 mm at the coarsest, 6.000004 mm. Either way it is a fiftieth of

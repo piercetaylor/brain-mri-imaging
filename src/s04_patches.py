@@ -116,12 +116,9 @@ def geometry_residuals(volume, mask_volume):
     what was measured to arrive at them.
 
     The residual and the displacement are each maximized over the three axes
-    independently, so the two need not fall on the same axis. On at least two
-    of the 49 pairs they do not: the displacement divided by the residual is
-    4.759 on UPENN-GBM-00609 and 3.293 on UPENN-GBM-00494, and neither quotient
-    is a spacing this cohort carries. The displacement is therefore the
-    furthest the segmentation would move along any one axis, and that is what
-    the quantum of the coordinate strings bounds.
+    independently, so the two need not fall on the same axis. The displacement
+    is the furthest the segmentation would move along any one axis, and that is
+    what the quantum of the coordinate strings bounds.
     """
     permutation = []
     direction_defect = 0.0
