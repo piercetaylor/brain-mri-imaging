@@ -1,6 +1,3 @@
-# Local development aids, not deliverables.
-.checks/
-
 # Images are redistributed by the archives that publish them, not by this
 # repository. data/download_data.py and data/checksums.txt are the
 # reproducible substitute.
