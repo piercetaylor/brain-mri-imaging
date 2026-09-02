@@ -1,5 +1,5 @@
 learning_rate,dropout,epochs,validation_roc_auc_final,validation_roc_auc_best,selected_epoch,train_loss_final,seconds,is_selected_configuration,selection_note
-1.0,0.5,8,0.9524,0.9543,7,0.152,74.5,1,selected: the largest of 4 configurations of a column that is itself the largest of 8 epochs
-1.0,0.3,8,0.93,0.9535,7,0.1243,75.9,0,not selected: the largest of 8 epochs of this configuration
-0.1,0.3,8,0.9128,0.9324,7,0.1664,71.8,0,not selected: the largest of 8 epochs of this configuration
-0.1,0.5,8,0.8934,0.9208,7,0.1943,72.1,0,not selected: the largest of 8 epochs of this configuration
+1.0,0.5,8,0.9524,0.9543,7,0.152,148.6,1,selected: the largest of 4 configurations of a column that is itself the largest of 8 epochs
+1.0,0.3,8,0.93,0.9535,7,0.1243,180.2,0,not selected: the largest of 8 epochs of this configuration
+0.1,0.3,8,0.9128,0.9324,7,0.1664,158.9,0,not selected: the largest of 8 epochs of this configuration
+0.1,0.5,8,0.8934,0.9208,7,0.1943,149.3,0,not selected: the largest of 8 epochs of this configuration

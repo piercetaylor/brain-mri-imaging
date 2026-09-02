@@ -1,4 +1,4 @@
-seed,split_unit,is_primary_seed,train_patches,test_patches,test_patients_contributing_patches,epochs,epoch_selection_monitor,selected_epoch,test_roc_auc,test_roc_auc_selected_epoch,test_roc_auc_final_epoch,test_roc_auc_epoch_selection_gain,roc_auc_inflation
+seed,split_unit,is_primary_seed,train_patches,test_patches,test_patients_contributing_patches,epochs,epoch_selection_monitor,selected_epoch,test_roc_auc,test_roc_auc_selected_epoch,test_roc_auc_final_epoch,test_roc_auc_epoch_selection_gain,seed_roc_auc_inflation_patch_minus_patient
 20251117,patient,1,38070,14412,13,20,validation_roc_auc,14,0.9864,0.9864,0.9723,0.0141,0.0043
 20251117,patch,1,35273,14697,49,20,validation_roc_auc,16,0.9907,0.9907,0.9888,0.0019,0.0043
 20251118,patient,0,33825,16260,13,20,validation_roc_auc,13,0.9479,0.9479,0.9202,0.0277,0.0404

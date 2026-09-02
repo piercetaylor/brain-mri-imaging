@@ -426,8 +426,12 @@ def seed_variance(X, y, patients, learning_rate, dropout, primary):
     for row in rows:
         by_seed.setdefault(row["seed"], {})[row["split_unit"]] = row["test_roc_auc"]
     inflation = [by_seed[s]["patch"] - by_seed[s]["patient"] for s in config.SEED_LIST]
+    # The difference belongs to the seed and not to either of the two rows the
+    # seed carries, so it is written on both and the name says which way it is
+    # taken. Read as roc_auc_inflation alone it is a property of the partition
+    # the row names, which is the one thing it is not.
     for row in rows:
-        row["roc_auc_inflation"] = round(
+        row["seed_roc_auc_inflation_patch_minus_patient"] = round(
             by_seed[row["seed"]]["patch"] - by_seed[row["seed"]]["patient"], 4)
     write_table(rows, SEED_TABLE)
     gains = [row["test_roc_auc_epoch_selection_gain"] for row in rows]

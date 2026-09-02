@@ -200,6 +200,15 @@ def evaluate():
         "eval_test_roc_auc_bootstrap_interval": config.BOOTSTRAP_INTERVAL,
         "eval_test_roc_auc_bootstrap_unit": "patient",
         "eval_test_patients": len(per_patient),
+        # A patient whose test patches carry one class admits no ROC-AUC, and
+        # per_patient_test.csv leaves the column empty for it. The three figures
+        # below are then taken over fewer patients than eval_test_patients
+        # counts, so the count they are taken over is recorded beside them.
+        "eval_test_patients_with_roc_auc": len(patient_aucs),
+        "eval_test_patient_roc_auc_role":
+            "taken over the {} of {} test patients whose patches carry both "
+            "classes, because a patient carrying one class admits no "
+            "ROC-AUC".format(len(patient_aucs), len(per_patient)),
         "eval_test_patient_roc_auc_min": round(min(patient_aucs), 4),
         "eval_test_patient_roc_auc_median": round(float(np.median(patient_aucs)), 4),
         "eval_test_patient_roc_auc_max": round(max(patient_aucs), 4),

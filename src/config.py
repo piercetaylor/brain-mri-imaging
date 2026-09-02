@@ -414,10 +414,10 @@ SELECTION_PARTICIPATION_SPLITS = ("validation",)
 # numbers that no longer exist. Each notebook prints a digest of the record it
 # read, and gate 07 recomputes that digest from results/metrics.csv.
 #
-# The digest is taken over the quantities that reproduce exactly. Of the 286
+# The digest is taken over the quantities that reproduce exactly. Of the 288
 # quantities the record holds, 8 are wall-clock timings whose key begins with
-# RECORD_TIMING_PREFIX and 3 are listed in RECORD_VOLATILE_KEYS, leaving 275
-# that a re-run must return unchanged. Gate 06 compares the same 275 key by key
+# RECORD_TIMING_PREFIX and 3 are listed in RECORD_VOLATILE_KEYS, leaving 277
+# that a re-run must return unchanged. Gate 06 compares the same 277 key by key
 # after re-running the pipeline from nothing, so the digest is stable exactly
 # where that comparison is.
 RECORD_TIMING_PREFIX = "pipeline_seconds"

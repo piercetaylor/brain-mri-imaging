@@ -293,6 +293,9 @@ check("the pointer names the retained epoch and not the final epoch",
 # seeds and is the key a reader reaches for first. It now names its seed, and
 # the cross-seed count, mean, minimum and maximum sit beside it.
 INFLATION = "leakage_roc_auc_inflation"
+# The column seed_variance.csv carries the per-seed difference under. The bare
+# name it replaced read as a property of the partition its row names.
+SEED_INFLATION_COLUMN = "seed_roc_auc_inflation_patch_minus_patient"
 INFLATION_KEYS = (INFLATION + "_primary_seed", INFLATION + "_seed_count",
                   INFLATION + "_seed_mean", INFLATION + "_seed_min",
                   INFLATION + "_seed_max")
@@ -302,9 +305,9 @@ primary_inflations: set = set()
 inflation_error = ""
 try:
     for row in seeds:
-        per_seed[row["seed"]] = float(row["roc_auc_inflation"])
+        per_seed[row["seed"]] = float(row[SEED_INFLATION_COLUMN])
         if row["is_primary_seed"] == "1":
-            primary_inflations.add(float(row["roc_auc_inflation"]))
+            primary_inflations.add(float(row[SEED_INFLATION_COLUMN]))
 except (KeyError, TypeError, ValueError) as error:
     inflation_error = " [{}]".format(error)
 inflations = sorted(per_seed.values())
